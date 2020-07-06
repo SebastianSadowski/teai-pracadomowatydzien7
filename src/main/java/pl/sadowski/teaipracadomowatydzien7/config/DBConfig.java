@@ -29,21 +29,16 @@ import java.util.Map;
 public class DBConfig {
 
     DataSource dataSource;
-@Autowired
+
+    @Autowired
     public DBConfig(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
     @Bean
-    public JdbcTemplate getJdbcTemplate(){
+    public JdbcTemplate getJdbcTemplate() {
         return new JdbcTemplate(getDataSource());
+    }
 }
 
-@EventListener(ApplicationReadyEvent.class)
-    public void init(){
-log.info(dataSource.toString());
-    String sql = "SHOW DATABASES";
-List<String> resultSet = getJdbcTemplate().queryForList(sql, String.class);
-log.info(resultSet.toString());
-}
-}
+
