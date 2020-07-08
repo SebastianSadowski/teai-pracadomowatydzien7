@@ -5,7 +5,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
-import pl.sadowski.teaipracadomowatydzien7.aspects.LogMethod;
+import pl.sadowski.teaipracadomowatydzien7.aspects.MethodsMarker;
 import pl.sadowski.teaipracadomowatydzien7.model.Car;
 
 import java.text.SimpleDateFormat;
@@ -25,7 +25,7 @@ public class CarDAOImpl implements CarDAO {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    @LogMethod(logExecutionTime = true, logObjects = true)
+    @MethodsMarker(logExecutionTime = true, logObjects = true)
     @Override
     public List<Car> getAll() {
         String sql = "SELECT * FROM cars";
@@ -41,7 +41,7 @@ public class CarDAOImpl implements CarDAO {
     }
 
 
-    @LogMethod(logExecutionTime = true, logObjects = false)
+    @MethodsMarker(logExecutionTime = true, logObjects = false)
     @Override
     public List<Car> findCarsByYear(@Nullable Integer min, @Nullable Integer max) {
         max = max == null ? Integer.valueOf(new SimpleDateFormat("yyyy").format(new Date())) : max;

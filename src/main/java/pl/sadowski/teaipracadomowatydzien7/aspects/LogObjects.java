@@ -13,7 +13,7 @@ import java.util.List;
 @Controller
 public class LogObjects {
 
-    @Pointcut("execution(@pl.sadowski.teaipracadomowatydzien7.aspects.LogMethod * *.*(..))")
+    @Pointcut("execution(@pl.sadowski.teaipracadomowatydzien7.aspects.MethodsMarker * *.*(..))")
     protected void logObjects() {
     }
 
@@ -29,18 +29,18 @@ public class LogObjects {
 //    }
 //}
 
-    @Around(value = "logObjects() && @annotation(logMethod)")
-    public Object doSoo(ProceedingJoinPoint joinPoint, LogMethod logMethod) throws Throwable {
+    @Around(value = "logObjects() && @annotation(methodsMarker)")
+    public Object doSoo(ProceedingJoinPoint joinPoint, MethodsMarker methodsMarker) throws Throwable {
         long start = 0;
-        if (logMethod.logExecutionTime()) {
+        if (methodsMarker.logExecutionTime()) {
             start = System.currentTimeMillis();
         }
         Object retVal = joinPoint.proceed();
-        if (logMethod.logObjects()) {
+        if (methodsMarker.logObjects()) {
             List<Car> cars = (List<Car>) retVal;
             cars.forEach(log::info);
         }
-        if (logMethod.logExecutionTime()) {
+        if (methodsMarker.logExecutionTime()) {
             log.info("Method   " + joinPoint.getSignature().getName() + " execution took: " + (System.currentTimeMillis() - start));
         }
 return retVal;
