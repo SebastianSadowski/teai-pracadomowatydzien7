@@ -5,7 +5,7 @@ import lombok.ToString;
 
 @AllArgsConstructor
 @ToString
-public class Cars {
+public class Car {
 
   private long id;
   private String mark;

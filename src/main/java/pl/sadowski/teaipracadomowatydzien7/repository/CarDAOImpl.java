@@ -1,25 +1,22 @@
 package pl.sadowski.teaipracadomowatydzien7.repository;
 
-import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
-import pl.sadowski.teaipracadomowatydzien7.model.Cars;
+import pl.sadowski.teaipracadomowatydzien7.aspects.LogMethod;
+import pl.sadowski.teaipracadomowatydzien7.model.Car;
 
-import java.lang.reflect.Field;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-@Log4j2
 @Repository
 public class CarDAOImpl implements CarDAO {
+
 
     JdbcTemplate jdbcTemplate;
 
@@ -28,24 +25,43 @@ public class CarDAOImpl implements CarDAO {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    @LogMethod(logExecutionTime = true, logObjects = true)
     @Override
-    public List<Cars> getAll() {
+    public List<Car> getAll() {
         String sql = "SELECT * FROM cars";
-        List<Cars> carsList = new ArrayList<>();
-        List<Map<String, Object>> map = jdbcTemplate.queryForList(sql);
-        map.forEach(object -> {
-            carsList.add(new Cars(
-                    Long.parseLong(String.valueOf(object.get("ID"))),
-                    String.valueOf(object.get("mark")),
-                    String.valueOf(object.get("model")),
-                    String.valueOf(object.get("color")),
-                    Integer.parseInt(String.valueOf(object.get("production_year")))));
-        });
-        return carsList;
+        List<Map<String, Object>> maps = jdbcTemplate.queryForList(sql);
+
+        return maps.stream().map(map -> new Car(
+                Long.parseLong(String.valueOf(map.get("ID"))),
+                String.valueOf(map.get("mark")),
+                String.valueOf(map.get("model")),
+                String.valueOf(map.get("color")),
+                Long.parseLong(String.valueOf(map.get("production_year")))))
+                .collect(Collectors.toList());
+    }
+
+
+    @LogMethod(logExecutionTime = true, logObjects = false)
+    @Override
+    public List<Car> findCarsByYear(@Nullable Integer min, @Nullable Integer max) {
+        max = max == null ? Integer.valueOf(new SimpleDateFormat("yyyy").format(new Date())) : max;
+        min = min == null ? 0 : min;
+        String sql = "SELECT * FROM cars " +
+                "WHERE production_year >= ? AND production_year <= ? " +
+                "ORDER BY production_year ASC";
+        List<Map<String, Object>> maps = jdbcTemplate.queryForList(sql, min, max);
+        return maps.stream().map(map -> new Car(
+                Long.parseLong(String.valueOf(map.get("ID"))),
+                String.valueOf(map.get("mark")),
+                String.valueOf(map.get("model")),
+                String.valueOf(map.get("color")),
+                Long.parseLong(String.valueOf(map.get("production_year"))))
+        ).collect(Collectors.toList());
+
     }
 
     @Override
-    public int save(Cars cars) throws DuplicateKeyException {
+    public int save(Car cars) throws DuplicateKeyException {
 
 
         String sql = "INSERT INTO cars VALUES(?, ?, ?, ?, ?)";
@@ -59,33 +75,14 @@ public class CarDAOImpl implements CarDAO {
     @Override
     public int deleteCar(long id) {
         String sql = "DELETE FROM cars WHERE ID = ?";
-      return  jdbcTemplate.update(sql, id);
+        return jdbcTemplate.update(sql, id);
     }
 
     @Override
-    public int updateCar(Cars cars) {
+    public int updateCar(Car cars) {
         String sql = "UPDATE cars SET mark = ?, model = ?, color = ?, production_year = ? WHERE ID = ?";
         return jdbcTemplate.update(sql, cars.getMark(), cars.getModel(), cars.getColor(), cars.getProductionYear(), cars.getId());
     }
 
 
-    @EventListener(ApplicationReadyEvent.class)
-    public void test() {
-        Cars car = new Cars(4, "OPEL", "ASTRA", "GREEN", 2019);
-        try {
-            save(car);
-        } catch (DuplicateKeyException e) {
-            log.error(e.getCause().getMessage());
-            log.error("I have updated car no.4");
-            updateCar(car);
-        }
-
-
-        getAll().stream().forEach(obj -> log.info(obj));
-
-        deleteCar(11);
-updateCar(new Cars(4, "DUPA", "DUPADUPA", "DUPADUPADUPA", 1995));
-        getAll().stream().forEach(obj -> log.info(obj));
-
-    }
 }

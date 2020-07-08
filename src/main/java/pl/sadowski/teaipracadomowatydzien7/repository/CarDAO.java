@@ -1,19 +1,20 @@
 package pl.sadowski.teaipracadomowatydzien7.repository;
 
 import org.springframework.dao.DuplicateKeyException;
-import pl.sadowski.teaipracadomowatydzien7.model.Cars;
+import pl.sadowski.teaipracadomowatydzien7.model.Car;
 
-import java.io.IOException;
 import java.util.List;
 
 public interface CarDAO {
 
-    List<Cars> getAll();
+    List<Car> getAll();
 
-    int save(Cars cars) throws DuplicateKeyException;
+    List<Car> findCarsByYear(Integer min, Integer max);
 
-    int deleteCar  (long id);
+    int save(Car cars) throws DuplicateKeyException;
 
-    int updateCar (Cars cars);
+    int deleteCar(long id);
+
+    int updateCar(Car cars);
 
 }
