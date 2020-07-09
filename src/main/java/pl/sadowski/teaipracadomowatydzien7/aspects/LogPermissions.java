@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface MethodsMarker {
+public @interface LogPermissions {
     public boolean logExecutionTime() default false;
     public boolean logObjects() default false;
 }

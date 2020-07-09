@@ -5,7 +5,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
-import pl.sadowski.teaipracadomowatydzien7.aspects.MethodsMarker;
+import pl.sadowski.teaipracadomowatydzien7.aspects.LogPermissions;
 import pl.sadowski.teaipracadomowatydzien7.model.Car;
 
 import java.text.SimpleDateFormat;
@@ -25,9 +25,9 @@ public class CarDAOImpl implements CarDAO {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    @MethodsMarker(logExecutionTime = true, logObjects = true)
+    @LogPermissions(logExecutionTime = true, logObjects = true)
     @Override
-    public List<Car> getAll() {
+    public List<Car> findAll() {
         String sql = "SELECT * FROM cars";
         List<Map<String, Object>> maps = jdbcTemplate.queryForList(sql);
 
@@ -41,7 +41,7 @@ public class CarDAOImpl implements CarDAO {
     }
 
 
-    @MethodsMarker(logExecutionTime = true, logObjects = false)
+    @LogPermissions(logExecutionTime = true, logObjects = false)
     @Override
     public List<Car> findCarsByYear(@Nullable Integer min, @Nullable Integer max) {
         max = max == null ? Integer.valueOf(new SimpleDateFormat("yyyy").format(new Date())) : max;
@@ -61,15 +61,21 @@ public class CarDAOImpl implements CarDAO {
     }
 
     @Override
-    public int save(Car cars) throws DuplicateKeyException {
+    public int save(Car cars) {
 
 
         String sql = "INSERT INTO cars VALUES(?, ?, ?, ?, ?)";
-        return jdbcTemplate.update(sql, cars.getId(),
-                cars.getMark(),
-                cars.getMark(),
-                cars.getColor(),
-                cars.getProductionYear());
+        int i;
+        try {
+             i = jdbcTemplate.update(sql, cars.getId(),
+                    cars.getMark(),
+                    cars.getMark(),
+                    cars.getColor(),
+                    cars.getProductionYear());
+        }catch (DuplicateKeyException e){
+            i = 0;
+        }
+        return i;
     }
 
     @Override
